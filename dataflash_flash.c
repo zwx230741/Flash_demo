@@ -2,7 +2,7 @@
 
 #define FLASH_DEV "test"
 
-static uint8_t msg_buffer[PAGESIZE];
+static uint8_t msg_buffer[2][PAGESIZE];	//0:write 1:read
 static int flash_fd;
 
 struct msg_data* Init()
@@ -42,7 +42,7 @@ void BlockRead(uint16_t IntPageAdr, void *pBuffer, uint16_t size)
 
 	memset(pBuffer, 0, size);
 
-	memcpy(pBuffer, &msg_buffer[IntPageAdr], size);
+	memcpy(pBuffer, &msg_buffer[1][IntPageAdr], size);
 	
     return;
 }
@@ -55,17 +55,18 @@ void BlockWrite(uint16_t IntPageAdr, const void *pHeader, uint8_t hdr_size,
    assert(IntPageAdr <= PAGESIZE);
    
     if (hdr_size) {
-        memcpy(&msg_buffer[IntPageAdr], pHeader, hdr_size);
+		memset(msg_buffer[0], 0, PAGESIZE);
+        memcpy(msg_buffer[0], pHeader, hdr_size);
     }
 
-    memcpy(&msg_buffer[IntPageAdr+hdr_size], pBuffer, size);
+    memcpy(&msg_buffer[0][IntPageAdr+hdr_size], pBuffer, size);
 
 #if 1
 	int i = 0;
 	printf("BlockWrite pBuffer IntPageAdr %d size+hdr_size %d:", IntPageAdr, size+hdr_size);
 	for(i = IntPageAdr; i < (IntPageAdr + (size + hdr_size)); i++)
 	{
-		printf("%d ", msg_buffer[i]);
+		printf("%d ", msg_buffer[0][i]);
 	}
 	printf("\n");
 #endif
@@ -90,17 +91,17 @@ void BufferToPage (uint16_t PageAdr, unsigned char wait)
 		return;
 	}
 
-#if 0
+#if 1
 	int i = 0;
 	printf("DataFlash_Flash BufferToPage:");
 	for(i = 0; i < PAGESIZE; i++)
 	{
-		printf("%d ", msg_buffer[i]);
+		printf("%d ", msg_buffer[0][i]);
 	}
 	printf("\n");
 #endif
 
-	if (write(flash_fd, &msg_buffer, PAGESIZE) != PAGESIZE)
+	if (write(flash_fd, msg_buffer[0], PAGESIZE) != PAGESIZE)
 	{
 		printf("BufferToPage write err.\n");
 		return;
@@ -118,13 +119,13 @@ void PageToBuffer(uint16_t PageAdr)
 		
 	off_t ofs = PageAdr * PAGESIZE;
 
-	memset(msg_buffer, 0, PAGESIZE);
+	memset(msg_buffer[1], 0, PAGESIZE);
 
 	if (lseek(flash_fd, ofs, SEEK_SET) != ofs) {
 		printf("PageToBuffer lseek err.\n");
         return;
     }
-	if (read(flash_fd, msg_buffer, PAGESIZE) != PAGESIZE)
+	if (read(flash_fd, msg_buffer[1], PAGESIZE) != PAGESIZE)
 	{
 		printf("PageToBuffer read err.\n");
 		return;
@@ -135,7 +136,7 @@ void PageToBuffer(uint16_t PageAdr)
 	printf("DataFlash_Flash PageToBuffer:");
 	for(i = 0; i < PAGESIZE; i++)
 	{
-		printf("%d ", msg_buffer[i]);
+		printf("%d ", msg_buffer[1][i]);
 	}
 	printf("\n");
 #endif
