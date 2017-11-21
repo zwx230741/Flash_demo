@@ -76,14 +76,12 @@ uint16_t start_new_msg(struct msg_data *msg)
 void get_msg_boundaries(struct msg_data *msg, uint16_t msg_num, uint16_t *start_page, uint16_t *end_page)
 {
     uint16_t num = get_num_msg(msg);	
-    uint16_t look;
+    int look;
 
     if (msg->df_BufferIdx != 0) {
         FinishWrite(msg);
 		usleep(100);	//important!
     }
-
-	msg_num = get_num_msg(msg);	//guess?
 
     if(num == 1)
     {
@@ -179,7 +177,7 @@ uint16_t find_last_page(struct msg_data *msg)
     return bottom;
 }
 
-uint16_t find_last_page_of_msg(struct msg_data *msg, uint16_t msg_number)
+int find_last_page_of_msg(struct msg_data *msg, uint16_t msg_number)
 {
     uint16_t look;
     uint16_t bottom;
