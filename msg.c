@@ -80,8 +80,10 @@ void get_msg_boundaries(struct msg_data *msg, uint16_t msg_num, uint16_t *start_
 
     if (msg->df_BufferIdx != 0) {
         FinishWrite(msg);
-//        hal.scheduler->delay(100);
+		usleep(100);	//important!
     }
+
+	msg_num = get_num_msg(msg);	//guess?
 
     if(num == 1)
     {
